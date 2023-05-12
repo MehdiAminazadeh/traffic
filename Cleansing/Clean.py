@@ -2,24 +2,24 @@ import os
 import random
 import re
 import csv
-import contextlib
+from contextlib import contextmanager
 from statistics import mean
 from math import floor
 from datetime import datetime
 import concurrent.futures
 
-@contextlib.contextmanager
+@contextmanager
 def working_dir(path):
     prev_cwd = os.getcwd()
     os.chdir(path)
     yield 
     os.chdir(prev_cwd)
     
-Path = "D:/shahrdari/scats-97-99"
+path = "D:/shahrdari/scats-97-99"
 
-def WritePar(Path_):
+def writePar(path_):
     files = []
-    with working_dir(path = Path_):
+    with working_dir(path = path_):
         for file in os.listdir():
             if file.endswith('.txt'):
                 files.append(file)
@@ -28,22 +28,21 @@ def WritePar(Path_):
                         with open(writer, "r") as inpfile:
                             outfile.write('\n' + inpfile.read())
             else:
-                WritePar(file)
+                writePar(file)
 
-WritePar(Path)
+writePar(path)
 
 fileList = []
-Root = []
+root_ = []
 
-for root, dirs, files in os.walk(Path):
+for root, dirs, files in os.walk(path):
     for file in files:
         if file.endswith('output.txt'):
             root = re.sub(r'\\', '/', root)
-            Root.append(root)
+            root_.append(root)
             fileList.append(os.path.join(root,file))
 
-def Process(file):
-    
+def process(file):
     def convertDate(strDate:str) -> datetime.date:
         format = ",%d,%B,%Y,%H:%M"
         date = datetime.strptime(strDate, format)
@@ -52,7 +51,6 @@ def Process(file):
 
     with open(file, 'r') as reader:
         Lines = reader.read()
-
         lsInput = re.sub("\n|\d?.=|(?<=Int).", "", Lines)
         lsInput = re.sub("\s+", ",", lsInput)
         lsInput = re.sub("(\w+)day|Int", "\n", lsInput)
@@ -73,7 +71,6 @@ def Process(file):
             
     with open(file, 'r') as secReader:
         read = secReader.read()
-        
         last_input = re.sub('(.+2046)|(2047)', '0', read)
         last_input = re.sub('0{2}', '0', last_input)
         last_input = re.sub('[A-Za-z]', '', last_input)
@@ -101,7 +98,6 @@ def Process(file):
     """
     lastList = []
     secondList = []
-            
     _finalData = [item.split(',') for item in finalData]
 
     for datum in _finalData:
@@ -120,14 +116,14 @@ def Process(file):
         integerList = [int(float(slicedItem)) for slicedItem in item_]
         lastList.append(integerList)
     
-    def ReplaceZero(arg: list) -> list:
+    def replaceZero(arg: list) -> list:
         try:
             key = 0
             dict_ = {}
             for value in arg:
                 dict_[key] = value.count(0)
-                listIndex = [NonZero for NonZero in value[2:] 
-                            if NonZero]
+                listIndex = [nonZero for nonZero in value[2:] 
+                            if nonZero]
                 
                 if value.count(0) > len(listIndex) ** 3: 
                     continue
@@ -149,8 +145,8 @@ def Process(file):
                         value[index] = floor(mean(sampled_list))
                     index += 1
                     
-        except ValueError as V:
-            print(f"Error happened at line {value}", V)
+        except ValueError as v:
+            print(f"Error happened at line {value}", v)
         
         return arg
     
@@ -179,7 +175,7 @@ def Process(file):
     
         return finalList
         
-    sumList = addSum(ReplaceZero(lastList))
+    sumList = addSum(replaceZero(lastList))
     
     def getCsv(file):
         with open(f'{file}.csv', 'w', newline=''
@@ -189,8 +185,8 @@ def Process(file):
             for line in sumList:
                 csv_writer.writerow(line)
                 
-    getCsv(file.strip('txt'))
+    getCsv(file.strip('.txt'))
 
 if __name__ == "__main__":
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(Process, fileList)
+        executor.map(process, fileList)
