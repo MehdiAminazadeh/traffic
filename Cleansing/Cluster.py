@@ -30,7 +30,7 @@ class Analysis:
         prediction = k_means.fit_predict(self.dataRead[['Intersection', 'Traffic']])
         self.dataRead['Cluster'] = prediction
        
-        with self.Modify():
+        with self.modify():
             plt.figure(figsize=(15,10))
             plt.scatter(self.dataRead['Intersection'], 
                         self.dataRead['Traffic'], 
