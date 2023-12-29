@@ -8,6 +8,9 @@ from math import floor
 from datetime import datetime
 import concurrent.futures
 
+"""change the current path of the program running
+after the process is finished thne come back normal path"""
+
 @contextmanager
 def working_dir(path):
     prev_cwd = os.getcwd()
@@ -17,6 +20,7 @@ def working_dir(path):
     
 path = "D:/shahrdari/scats-97-99"
 
+# process recursively on each text file stored in each directory
 def writePar(path_):
     files = []
     with working_dir(path = path_):
@@ -42,13 +46,17 @@ for root, dirs, files in os.walk(path):
             root_.append(root)
             fileList.append(os.path.join(root,file))
 
+
+""" define a function over the program in order to multiprocess on each file """
 def process(file):
     def convertDate(strDate:str) -> datetime.date:
         format = ",%d,%B,%Y,%H:%M"
         date = datetime.strptime(strDate, format)
         return date.timestamp() * 1000
 
-
+    """read every single text file and implement Regular expression
+    to remove unwanted values"""
+    
     with open(file, 'r') as reader:
         Lines = reader.read()
         lsInput = re.sub("\n|\d?.=|(?<=Int).", "", Lines)
@@ -78,7 +86,8 @@ def process(file):
         last_input = re.sub(',,', ',',last_input)
 
         finalData = []
-        
+
+        # split the giant string into lines by the expressed pattern
         to_find = re.compile(r'^(\d.*)', re.M)
         matches = to_find.finditer(last_input)
         for match in matches:
@@ -100,22 +109,25 @@ def process(file):
     secondList = []
     _finalData = [item.split(',') for item in finalData]
 
+    # remove ''
     for datum in _finalData:
         lastList.append(list(
             filter((lambda x: x != ''),datum)
             ))
-
+    
     for data in lastList:
         if len(data) > 3:
             if len(data[0]) >= 4:
-                secondList.append(data)
+                secondList.append(data) # remove data lines with less than 3 values, else add the clean lines 
 
     lastList.clear()
-
+    
+    # convert string lines into integers 
     for item_ in secondList:
         integerList = [int(float(slicedItem)) for slicedItem in item_]
         lastList.append(integerList)
-    
+
+    # ALGO to remove zero values 
     def replaceZero(arg: list) -> list:
         try:
             key = 0
@@ -149,7 +161,8 @@ def process(file):
             print(f"Error happened at line {value}", v)
         
         return arg
-    
+        
+    # add all the values of entries in the intersection
     def addSum(value: list) -> list:
         columns = 'Intersection Date_Time Traffic'
         slices = []
